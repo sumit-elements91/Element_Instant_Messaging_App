@@ -17,7 +17,6 @@
 package im.vector.app.features.home.room.detail.timeline.format
 
 import dagger.Lazy
-import im.vector.app.EmojiSpanify
 import im.vector.app.R
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
@@ -32,7 +31,6 @@ import org.matrix.android.sdk.api.session.room.model.message.MessageContent
 import org.matrix.android.sdk.api.session.room.model.message.MessagePollContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageTextContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageType
-import org.matrix.android.sdk.api.session.room.model.relation.ReactionContent
 import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
 import org.matrix.android.sdk.api.session.room.timeline.getLastMessageContent
 import org.matrix.android.sdk.api.session.room.timeline.getTextDisplayableContent
@@ -41,7 +39,6 @@ import javax.inject.Inject
 class DisplayableEventFormatter @Inject constructor(
         private val stringProvider: StringProvider,
         private val colorProvider: ColorProvider,
-        private val emojiSpanify: EmojiSpanify,
         private val noticeEventFormatter: NoticeEventFormatter,
         private val htmlRenderer: Lazy<EventHtmlRenderer>
 ) {
@@ -102,12 +99,6 @@ class DisplayableEventFormatter @Inject constructor(
             }
             EventType.STICKER                   -> {
                 simpleFormat(senderName, stringProvider.getString(R.string.send_a_sticker), appendAuthor)
-            }
-            EventType.REACTION                  -> {
-                timelineEvent.root.getClearContent().toModel<ReactionContent>()?.relatesTo?.let {
-                    val emojiSpanned = emojiSpanify.spanify(stringProvider.getString(R.string.sent_a_reaction, it.key))
-                    simpleFormat(senderName, emojiSpanned, appendAuthor)
-                } ?: span { }
             }
             EventType.KEY_VERIFICATION_CANCEL,
             EventType.KEY_VERIFICATION_DONE     -> {
@@ -214,11 +205,6 @@ class DisplayableEventFormatter @Inject constructor(
             }
             EventType.STICKER                   -> {
                 stringProvider.getString(R.string.send_a_sticker)
-            }
-            EventType.REACTION                  -> {
-                event.getClearContent().toModel<ReactionContent>()?.relatesTo?.let {
-                    emojiSpanify.spanify(stringProvider.getString(R.string.sent_a_reaction, it.key))
-                } ?: span { }
             }
             in EventType.POLL_START             -> {
                 event.getClearContent().toModel<MessagePollContent>(catchError = true)?.pollCreationInfo?.question?.question
